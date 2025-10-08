@@ -13,7 +13,8 @@ def seed_admin(db: Session):
         admin_user = User(
             name="Admin User",
             username="admin",
-            password=get_password_hash("Admin123!"),  
+            email="janvanderzwan123@gmail.com",
+            password=get_password_hash("Admin123"),  
             role_id=admin_role.id
         )
         db.add(admin_user)
