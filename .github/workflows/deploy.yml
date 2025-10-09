@@ -1,0 +1,50 @@
+name: Deploy FastAPI
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Setup SSH
+        uses: webfactory/ssh-agent@v0.7.0
+        with:
+          ssh-private-key: ${{ secrets.SSH_PRIVATE_KEY }}
+
+      - name: Deploy to server
+        run: |
+          ssh -o StrictHostKeyChecking=no ${{ secrets.SERVER_USER }}@${{ secrets.SERVER_HOST }} bash << 'EOF'
+            set -e
+
+            # Navigate to app directory
+            cd ${{ secrets.APP_DIR }}
+
+            # Pull latest changes
+            git pull origin main
+
+            # Activate virtual environment or create it
+            if [ ! -d "venv" ]; then
+              python3 -m venv venv
+            fi
+            source venv/bin/activate
+
+            # Install dependencies
+            pip install --upgrade pip
+            pip install -r requirements.txt
+
+            # Restart the FastAPI app (using uvicorn or systemd)
+            # Option 1: uvicorn in background
+            pkill -f "uvicorn main:app" || true
+            nohup uvicorn main:app --host 0.0.0.0 --port 8000 &
+
+            # Option 2: systemd service (recommended for production)
+            # sudo systemctl restart myfastapi.service
+
+          EOF
