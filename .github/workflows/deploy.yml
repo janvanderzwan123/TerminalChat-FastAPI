@@ -21,6 +21,8 @@ jobs:
       - name: Deploy to server
         run: |
           ssh -o StrictHostKeyChecking=no ${{ secrets.SERVER_USER }}@${{ secrets.SERVER_HOST }} bash <<EOF
+          whoami
+          pwd
           DEPLOY_DIR=/root/TerminalChat-FastAPI
           cd "$DEPLOY_DIR" || exit 1
           pwd
