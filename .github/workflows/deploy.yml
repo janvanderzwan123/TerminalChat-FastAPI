@@ -20,16 +20,14 @@ jobs:
 
       - name: Deploy to server
         run: |
-          ssh -o StrictHostKeyChecking=no ${{ secrets.SERVER_USER }}@${{ secrets.SERVER_HOST }} bash << 'EOF'
+          ssh -o StrictHostKeyChecking=no ${{ secrets.SERVER_USER }}@${{ secrets.SERVER_HOST }} bash << EOF
             set -e
-
-            # Navigate to app directory
             cd ${{ secrets.APP_DIR }}
 
-            # Pull latest changes
+            # Pull latest code
             git pull origin main
 
-            # Activate virtual environment or create it
+            # Activate venv
             if [ ! -d "venv" ]; then
               python3 -m venv venv
             fi
@@ -39,12 +37,7 @@ jobs:
             pip install --upgrade pip
             pip install -r requirements.txt
 
-            # Restart the FastAPI app (using uvicorn or systemd)
-            # Option 1: uvicorn in background
-            pkill -f "uvicorn main:app" || true
-            nohup uvicorn main:app --host 0.0.0.0 --port 8000 &
-
-            # Option 2: systemd service (recommended for production)
-            # sudo systemctl restart myfastapi.service
-
+            # Restart FastAPI app (simple nohup example)
+            pkill -f "uvicorn app.main:app" || true
+            nohup uvicorn app.main:app --host 0.0.0.0 --port 8000 &
           EOF
