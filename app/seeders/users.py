@@ -20,3 +20,15 @@ def seed_admin(db: Session):
         db.add(admin_user)
         db.commit()
         print("Admin user seeded!")
+    existing_test = db.query(User).filter(User.username == "test").first()
+    if not existing_test:
+        test_user = User(
+            name="Test User",
+            username="test",
+            email="test@example.com",
+            password=get_password_hash("Admin123"),  
+            role_id=admin_role.id
+        )
+        db.add(test_user)
+        db.commit()
+        print("Test user seeded!")

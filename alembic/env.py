@@ -18,6 +18,10 @@ if config.config_file_name is not None:
 from app.db.models.user import User
 from app.db.models.role import Role
 from app.db.models.config import Config
+from app.db.models.chat import Chat
+from app.db.models.chat_members import ChatMember
+from app.db.models.message import Message
+from app.db.models.media import Media
 from app.db.session import Base  # only import Base, not SessionLocal
 
 target_metadata = Base.metadata
