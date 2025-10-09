@@ -22,20 +22,22 @@ jobs:
         run: |
           ssh -o StrictHostKeyChecking=no root@${{ secrets.SERVER_HOST }} "
             DEPLOY_DIR=/root/TerminalChat-FastAPI
-            mkdir -p \$DEPLOY_DIR
-            cd \$DEPLOY_DIR || exit 1
 
+            # Go to existing repo
+            cd \$DEPLOY_DIR || { echo 'Directory not found'; exit 1; }
+
+            # Pull latest changes
             git reset --hard
             git pull origin main
 
-            if [ ! -d venv ]; then
-              python3 -m venv venv
-            fi
+            # Activate venv
             source venv/bin/activate
 
+            # Install dependencies
             pip install --upgrade pip
             pip install -r requirements.txt
 
+            # Restart FastAPI
             pkill -f 'uvicorn app.main:app' || true
             nohup uvicorn app.main:app --host 0.0.0.0 --port 8000 > uvicorn.log 2>&1 &
             disown
