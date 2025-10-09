@@ -18,26 +18,28 @@ jobs:
         with:
           ssh-private-key: ${{ secrets.SSH_PRIVATE_KEY }}
 
-      - name: Deploy to server
+      - name: Deploy to VPS
         run: |
-          ssh -o StrictHostKeyChecking=no ${{ secrets.SERVER_USER }}@${{ secrets.SERVER_HOST }} bash <<EOF
-          whoami
-          pwd
-          DEPLOY_DIR=/root/TerminalChat-FastAPI
-          cd "$DEPLOY_DIR" || exit 1
-          pwd
-          ls -l
-          git pull origin main
+          # Move to deploy dir
+          sudo mkdir -p /root/TerminalChat-FastAPI
+          sudo chown -R runner:runner /root/TerminalChat-FastAPI
+          cd /root/TerminalChat-FastAPI || exit 1
 
+          # Pull latest repo
+          sudo git reset --hard
+          sudo git pull origin main
+
+          # Setup venv
           if [ ! -d "venv" ]; then
               python3 -m venv venv
           fi
           source venv/bin/activate
 
+          # Install dependencies
           pip install --upgrade pip
           pip install -r requirements.txt
 
-          pkill -f "uvicorn app.main:app" || true
+          # Restart FastAPI
+          sudo pkill -f "uvicorn app.main:app" || true
           nohup uvicorn app.main:app --host 0.0.0.0 --port 8000 > uvicorn.log 2>&1 &
           disown
-          EOF
