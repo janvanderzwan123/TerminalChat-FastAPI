@@ -20,24 +20,20 @@ jobs:
 
       - name: Deploy to server
         run: |
-          ssh -o StrictHostKeyChecking=no ${{ secrets.SERVER_USER }}@${{ secrets.SERVER_HOST }} bash << 'EOF'
-APP_DIR=/root/TerminalChat-FastAPI
-cd "$APP_DIR"
+          ssh -o StrictHostKeyChecking=no ${{ secrets.SERVER_USER }}@${{ secrets.SERVER_HOST }} bash <<-'EOF'
+              APP_DIR=/root/TerminalChat-FastAPI
+              cd "$APP_DIR"
 
-# Pull latest code
-git pull origin main
+              git pull origin main
 
-# Activate venv
-if [ ! -d "venv" ]; then
-  python3 -m venv venv
-fi
-source venv/bin/activate
+              if [ ! -d "venv" ]; then
+                  python3 -m venv venv
+              fi
+              source venv/bin/activate
 
-# Install dependencies
-pip install --upgrade pip
-pip install -r requirements.txt
+              pip install --upgrade pip
+              pip install -r requirements.txt
 
-# Restart FastAPI app
-pkill -f "uvicorn app.main:app" || true
-nohup uvicorn app.main:app --host 0.0.0.0 --port 8000 &
-EOF
+              pkill -f "uvicorn app.main:app" || true
+              nohup uvicorn app.main:app --host 0.0.0.0 --port 8000 &
+          EOF
