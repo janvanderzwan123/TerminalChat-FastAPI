@@ -9,3 +9,4 @@ pydantic-settings
 python-dotenv
 python-jose[cryptography]
 pydantic[email]
+python-multipart
