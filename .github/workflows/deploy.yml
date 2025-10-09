@@ -7,7 +7,7 @@ on:
 
 jobs:
   deploy:
-    runs-on: [self-hosted, vps-runner]
+    runs-on: ubuntu-latest
 
     steps:
       - name: Checkout code
@@ -20,26 +20,23 @@ jobs:
 
       - name: Deploy to VPS
         run: |
-          # Move to deploy dir
-          sudo mkdir -p /root/TerminalChat-FastAPI
-          sudo chown -R runner:runner /root/TerminalChat-FastAPI
-          cd /root/TerminalChat-FastAPI || exit 1
+          ssh -o StrictHostKeyChecking=no root@${{ secrets.SERVER_HOST }} "
+            DEPLOY_DIR=/root/TerminalChat-FastAPI
+            mkdir -p \$DEPLOY_DIR
+            cd \$DEPLOY_DIR || exit 1
 
-          # Pull latest repo
-          sudo git reset --hard
-          sudo git pull origin main
+            git reset --hard
+            git pull origin main
 
-          # Setup venv
-          if [ ! -d "venv" ]; then
+            if [ ! -d venv ]; then
               python3 -m venv venv
-          fi
-          source venv/bin/activate
+            fi
+            source venv/bin/activate
 
-          # Install dependencies
-          pip install --upgrade pip
-          pip install -r requirements.txt
+            pip install --upgrade pip
+            pip install -r requirements.txt
 
-          # Restart FastAPI
-          sudo pkill -f "uvicorn app.main:app" || true
-          nohup uvicorn app.main:app --host 0.0.0.0 --port 8000 > uvicorn.log 2>&1 &
-          disown
+            pkill -f 'uvicorn app.main:app' || true
+            nohup uvicorn app.main:app --host 0.0.0.0 --port 8000 > uvicorn.log 2>&1 &
+            disown
+          "
